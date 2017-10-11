@@ -1,8 +1,6 @@
 package org.elasticsearch.index.analysis;
 
-import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +12,6 @@ import org.apache.lucene.analysis.TokenStream;
 
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.index.Index;
 import org.elasticsearch.index.IndexSettings;
 
 
@@ -29,22 +26,12 @@ public class LemmagenFilterFactory extends AbstractTokenFilterFactory {
 
         super(indexSettings, name, settings);
 
-        String lexicon     = settings.get("lexicon", "mlteast-en");
         String lexiconPath = settings.get("lexicon_path", null);
 
         if (lexiconPath != null) {
             this.lemmatizer = getLemmatizer(env.configFile().resolve(lexiconPath).toUri());
         } else {
-            lexicon         = lexicon.contains("mlteast-") ? lexicon + ".lem" : "mlteast-" + lexicon + ".lem";
-            this.lemmatizer = getLemmatizer(lexicon, getClass().getClassLoader().getResourceAsStream(lexicon));
-        }
-    }
-
-    public Lemmatizer getLemmatizer(String resourceName, InputStream lexiconStream) {
-        try {
-            return LemmatizerFactory.read(lexiconStream);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Can't initialize lemmatizer from stream " + resourceName, e);
+            throw new IllegalArgumentException("lemmagen token filter requires `lexicon_path` to be specified");
         }
     }
 
@@ -54,14 +41,6 @@ public class LemmagenFilterFactory extends AbstractTokenFilterFactory {
             return LemmatizerFactory.read(new FileInputStream(lexiconFile));
         } catch (Exception e) {
             throw new IllegalArgumentException("Can't initialize lemmatizer from resource path " + lexiconPath.toString(), e);
-        }
-    }
-
-    public Lemmatizer getLemmatizer(String lexicon) {
-        try {
-            return LemmatizerFactory.getPrebuilt(lexicon);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Can't initialize lemmatizer from resource " + lexicon, e);
         }
     }
 

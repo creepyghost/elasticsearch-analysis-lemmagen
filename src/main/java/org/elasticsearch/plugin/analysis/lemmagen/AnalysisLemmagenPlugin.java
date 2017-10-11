@@ -9,10 +9,11 @@ import org.elasticsearch.index.analysis.TokenFilterFactory;
 import java.util.Map;
 
 import static java.util.Collections.singletonMap;
+import static org.elasticsearch.plugins.AnalysisPlugin.requriesAnalysisSettings;
 
 public class AnalysisLemmagenPlugin extends Plugin implements AnalysisPlugin {
     @Override
     public Map<String, AnalysisProvider<TokenFilterFactory>> getTokenFilters() {
-        return singletonMap("lemmagen", LemmagenFilterFactory::new);
+        return singletonMap("lemmagen", requriesAnalysisSettings(LemmagenFilterFactory::new));
     }
 }
